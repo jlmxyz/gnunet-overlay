@@ -1,0 +1,12 @@
+<repositories version="1.1" encoding="unicode">
+  <repo quality="experimental" priority="1">
+    <name>gnunet-overlay</name>
+    <description>a gentoo layman overlay for gnunet based sofware</description>
+    <homepage>https://github.com/jlmxyz/gnunet-overlay</homepage>
+    <owner>
+      <email>jlmxyz.forums@gmail.com</email>
+      <name>jlmxyz</name>
+    </owner>
+    <source type="git">https://github.com/jlmxyz/gnunet-overlay</source>
+  </repo>
+</repositories>
