@@ -1,0 +1,26 @@
+diff --git a/src/gns/Makefile.am b/src/gns/Makefile.am
+index a164efe..f29a948 100644
+--- a/src/gns/Makefile.am
++++ b/src/gns/Makefile.am
+@@ -158,7 +158,7 @@ endif
+ if LINUX
+ HIJACKBIN = gnunet-dns2gns
+ install-exec-hook:
+-	$(SUDO_OR_DOAS_BINARY) setcap 'cap_net_bind_service=+ep' $(DESTDIR)$(libexecdir)/gnunet-dns2gns || true
++	setcap 'cap_net_bind_service=+ep' $(DESTDIR)$(libexecdir)/gnunet-dns2gns || true
+ else
+ install-exec-hook:
+ endif
+diff --git a/src/gns/Makefile.in b/src/gns/Makefile.in
+index b141d98..c0f58ff 100644
+--- a/src/gns/Makefile.in
++++ b/src/gns/Makefile.in
+@@ -2139,7 +2139,7 @@ test_gnunet_gns.sh: test_gnunet_gns.sh.in Makefile
+ 	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/test_gnunet_gns.sh.in > test_gnunet_gns.sh
+ 	@chmod +x test_gnunet_gns.sh
+ @LINUX_TRUE@install-exec-hook:
+-@LINUX_TRUE@	$(SUDO_OR_DOAS_BINARY) setcap 'cap_net_bind_service=+ep' $(DESTDIR)$(libexecdir)/gnunet-dns2gns || true
++@LINUX_TRUE@	setcap 'cap_net_bind_service=+ep' $(DESTDIR)$(libexecdir)/gnunet-dns2gns || true
+ @LINUX_FALSE@install-exec-hook:
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.

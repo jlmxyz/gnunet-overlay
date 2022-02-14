@@ -2,17 +2,17 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=6
+EAPI=8
 
 if [[ ${PV} == "9999" ]] ; then
-	inherit eutils autotools git-r3 user
+	inherit autotools git-r3
 	EGIT_REPO_URI="https://git.gnunet.org/gnunet.git"
-	WANT_AUTOCONF="2.59"
-	WANT_AUTOMAKE="1.11"
+	WANT_AUTOCONF="2.69"
+	WANT_AUTOMAKE="1.11.1"
 	WANT_LIBTOOL="2.2"
 	AUTOTOOLS_AUTORECONF=1
 else
-	inherit user
+	#inherit libtool multilib-minimal
 	SRC_URI="mirror://gnu/${PN}/${P}.tar.gz"
 	KEYWORDS="~amd64"
 fi
@@ -26,27 +26,58 @@ RESTRICT="test"
 LICENSE="GPL-3"
 
 SLOT="0"
-IUSE="experimental +hostlist http mysql nls postgres +sqlite X"
-REQUIRED_USE="
-	!mysql? ( sqlite )
-	!sqlite? ( mysql  )
+IUSE="experimental mysql nls postgresql +sqlite X curl idn bluez conversation FileSharing NATuPnP QRCode GNSvcard"
+
+PATCHES=(
+	"${FILESDIR}/${P}-fix-sudo-in-install.patch"
+)
+
+IDEPEND="
+	acct-user/gnunet
 "
 
-DEPEND="
-	hostlist? (
-		|| (
-			net-misc/gnurl
-			>=net-misc/curl-7.21.0[curl_ssl_gnutls]
-		)
-	)
-	>=media-libs/libextractor-0.6.1
-	dev-libs/libgcrypt
+
+RDEPEND="
+	${IDEPEND}
+	app-shells/bash
+	sys-devel/gettext
+	>=net-libs/gnutls-3.2.12
+	curl? ( >=net-misc/curl-7.35.0 )
+	!curl? ( net-misc/gnurl )
 	>=dev-libs/libunistring-0.9.2
-	sys-libs/ncurses
-	sys-libs/zlib
-	dev-libs/jansson
+	idn? ( >=net-dns/libidn-1.0 )
+	!idn? ( net-dns/libidn2 )
 	>=net-libs/libmicrohttpd-0.9.63
+	dev-libs/jansson
+	dev-libs/nss
+	dev-libs/openssl
+	dev-libs/libltdl
+	!mysql? ( >=dev-db/sqlite-3.0 )
+	!sqlite? ( >=virtual/mysql-5.1 )
 	mysql? ( >=virtual/mysql-5.1 )
+	postgresql? ( dev-db/postgresql )
+	sys-apps/which
+	sys-libs/zlib
+	>=dev-libs/libsodium-1.0.17
+	bluez? ( media-sound/bluez-alsa )
+	conversation? (
+		media-libs/libopusenc
+		media-libs/libpulse
+		media-libs/libogg
+	)
+	FileSharing? (
+		sys-libs/libextractor
+	)
+	NATuPnP? (
+		net-libs/miniupnpc
+	)
+	QRCode? (
+		media-gfx/zbar
+	)
+	GNSvcard? (
+		app-text/texlive
+	)
+	>=dev-libs/libgcrypt-1.6
 	nls? ( sys-devel/gettext )
 	sqlite? ( >=dev-db/sqlite-3.0 )
 	X? (
@@ -57,10 +88,12 @@ DEPEND="
 	)
 "
 
-pkg_setup() {
-	enewgroup gnunetdns
-	enewuser  gnunet
-}
+BDEPEND="
+	${RDEPEND}
+"
+
+DEPEND="${RDEPEND}"
+
 
 src_prepare() {
 	default
@@ -70,14 +103,27 @@ src_prepare() {
 }
 
 src_configure() {
+	if [[ ${PV} == "9999" ]] ; then
+		./bootstrap
+	fi
 	econf \
 		--docdir="${EPREFIX}/usr/share/doc/${PF}" \
 		$(use_enable nls) \
 		$(use_enable experimental) \
 		$(use_with mysql) \
-		$(use_with postgres) \
+		$(use_with postgresql) \
 		$(use_with sqlite) \
-		$(use_with X x)
+		$(use_with X x) \
+		$(use_with conversation opus) \
+		$(use_with conversation pulse) \
+		$(use_with conversation ogg) \
+		$(use_with FileSharing extractor) \
+		$(use_with QRCode zbar) \
+		--with-microhttpd
+	if [[ ${PV} == "9999" ]] ; then
+		echo ${PV}
+		emake -j1  gana
+	fi
 }
 
 src_install() {
