@@ -26,17 +26,19 @@ RESTRICT="test"
 LICENSE="GPL-3"
 
 SLOT="0"
-IUSE="experimental +hostlist http mysql nls postgres +sqlite X"
+IUSE="experimental +hostlist http mysql nls postgresql +sqlite X"
 REQUIRED_USE="
 	!mysql? ( sqlite )
 	!sqlite? ( mysql  )
 "
 
+BDEPEND="net-p2p/gnunet"
+
 DEPEND="
 	hostlist? (
 		|| (
 			net-misc/gnurl
-			>=net-misc/curl-7.21.0[curl_ssl_gnutls]
+			>=net-misc/curl-7.21.0
 		)
 	)
 	>=media-libs/libextractor-0.6.1
@@ -49,6 +51,7 @@ DEPEND="
 	mysql? ( >=virtual/mysql-5.1 )
 	nls? ( sys-devel/gettext )
 	sqlite? ( >=dev-db/sqlite-3.0 )
+	postgresql? ( dev-db/postgresql )
 	X? (
 		x11-libs/libXt
 		x11-libs/libXext
@@ -70,14 +73,22 @@ src_prepare() {
 }
 
 src_configure() {
+	if [[ ${PV} == "9999" ]] ; then
+		./bootstrap
+	fi
 	econf \
 		--docdir="${EPREFIX}/usr/share/doc/${PF}" \
 		$(use_enable nls) \
 		$(use_enable experimental) \
 		$(use_with mysql) \
-		$(use_with postgres) \
+		$(use_with postgresql) \
 		$(use_with sqlite) \
-		$(use_with X x)
+		$(use_with X x) \
+		--with-microhttpd
+	if [[ ${PV} == "9999" ]] ; then
+		echo ${PV}
+		emake -j1  gana
+	fi
 }
 
 src_install() {
