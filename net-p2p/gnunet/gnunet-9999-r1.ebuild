@@ -19,6 +19,7 @@ fi
 
 AUTOTOOLS_IN_SOURCE_BUILD=1
 
+#see https://docs.gnunet.org/latest/installing.html
 DESCRIPTION="GNUnet is a framework for secure peer-to-peer networking."
 HOMEPAGE="http://gnunet.org/"
 RESTRICT="test"
@@ -26,7 +27,7 @@ RESTRICT="test"
 LICENSE="GPL-3"
 
 SLOT="0"
-IUSE="experimental mysql nls postgresql +sqlite X curl idn bluez conversation FileSharing NATuPnP QRCode GNSvcard"
+IUSE="experimental mysql nls postgresql +sqlite X curl idn bluez conversation NATuPnP QRCode GNSvcard"
 
 PATCHES=(
 	"${FILESDIR}/${P}-fix-sudo-in-install.patch"
@@ -34,6 +35,7 @@ PATCHES=(
 
 IDEPEND="
 	acct-user/gnunet
+	acct-group/gnunetdns
 "
 
 
@@ -65,9 +67,7 @@ RDEPEND="
 		media-libs/libpulse
 		media-libs/libogg
 	)
-	FileSharing? (
-		sys-libs/libextractor
-	)
+	sys-libs/libextractor
 	NATuPnP? (
 		net-libs/miniupnpc
 	)
@@ -117,7 +117,6 @@ src_configure() {
 		$(use_with conversation opus) \
 		$(use_with conversation pulse) \
 		$(use_with conversation ogg) \
-		$(use_with FileSharing extractor) \
 		$(use_with QRCode zbar) \
 		--with-microhttpd
 	if [[ ${PV} == "9999" ]] ; then
@@ -131,6 +130,8 @@ src_install() {
 	newinitd "${FILESDIR}"/${PN}-9999.initd gnunet
 	keepdir /var/{lib,log}/gnunet
 	fowners gnunet:gnunet /var/lib/gnunet /var/log/gnunet
+	insinto /etc
+	doins "${FILESDIR}"/gnunet.conf
 }
 
 pkg_postinst() {
